@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Paper Generator - Terminal Style</title>
+    <style>
+        /* Terminal-style theme */
+        body {
+            background: #000;
+            color: #00FF00;
+            font-family: monospace;
+            padding: 20px;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background: #111;
+            padding: 20px;
+            border: 2px solid #00FF00;
+            border-radius: 10px;
+            text-align: left;
+        }
+        h1 {
+            text-align: center;
+            color: #00FF00;
+            margin-bottom: 15px;
+        }
+        .instructions {
+            font-size: 14px;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+        textarea {
+            width: 100%;
+            height: 300px;
+            background: #000;
+            color: #00FF00;
+            border: 1px solid #00FF00;
+            padding: 10px;
+            font-family: monospace;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #00FF00;
+            color: #000;
+            font-family: monospace;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #55FF55;
+        }
+        #message {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: center;
+        }
+        .error {
+            color: #FF0000;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Test Paper Generator</h1>
+    <p class="instructions">
+        Enter your questions below, one per line, using the format:<br>
+        <code>QUESTION_TEXT | OPTION_A | OPTION_B | OPTION_C | OPTION_D | CORRECT_OPTION_LETTER</code>
+    </p>
+    <textarea id="questionInput" placeholder="Type your questions here..."></textarea>
+    <button onclick="saveTest()">Save Test and Open Test Page</button>
+    <div id="message"></div>
+</div>
+
+<script>
+    function saveTest() {
+        const input = document.getElementById("questionInput").value.trim();
+        const messageBox = document.getElementById("message");
+        messageBox.innerHTML = ""; // Clear previous messages
+
+        if (!input) {
+            showMessage("Please enter at least one question.", true);
+            return;
+        }
+
+        const lines = input.split("\n").map(line => line.trim()).filter(line => line !== "");
+        let questions = [];
+        let invalidLines = [];
+
+        lines.forEach((line, index) => {
+            const parts = line.split(" | ").map(part => part.trim());
+
+            if (parts.length !== 6) {
+                invalidLines.push(index + 1);
+            } else {
+                const [qText, optA, optB, optC, optD, correct] = parts;
+
+                if (!["A", "B", "C", "D"].includes(correct.toUpperCase())) {
+                    invalidLines.push(index + 1);
+                } else {
+                    questions.push({
+                        question: qText,
+                        options: [optA, optB, optC, optD],
+                        answer: correct.toUpperCase()
+                    });
+                }
+            }
+        });
+
+        if (invalidLines.length > 0) {
+            showMessage("Error: Invalid format on line(s): " + invalidLines.join(", "), true);
+            return;
+        }
+
+        // Save to localStorage
+        localStorage.setItem("questionPaper", JSON.stringify(questions));
+        showMessage("Test saved successfully! Redirecting...", false);
+
+        // Redirect to test.html after a delay
+        setTimeout(() => {
+            window.location.href = "test.html";
+        }, 1000);
+    }
+
+    function showMessage(message, isError) {
+        const messageBox = document.getElementById("message");
+        messageBox.textContent = message;
+        messageBox.className = isError ? "error" : "";
+    }
+</script>
+
+</body>
+</html>
